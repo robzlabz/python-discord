@@ -18,7 +18,7 @@ scheduler = BlockingScheduler(timezone="asia/jakarta")
 
 # add the job to the scheduler
 scheduler.add_job(
-    cron_process, "interval", minutes=1
+    cron_process, "interval", seconds=10
 )
 
 # start the scheduler
