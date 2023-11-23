@@ -65,7 +65,11 @@ for feed_url in feed_urls:
     # Loop through the entries in the feed (most recent first)
     for entry in reversed(feed.entries):
         # Check if this job has already been processed
-        job_id = findall(r'(?<=_)%([a-zA-Z0-9]+)', entry.link)[0]
+        try:
+            # job_id = findall(r'(?<=_)%([a-zA-Z0-9]+)', entry.link)[0]
+            job_id = findall(r'_%([a-zA-Z0-9]+)\?', entry.link)[0]
+        except:
+            continue
         cursor.execute('SELECT * FROM jobs WHERE job_id = ?', (job_id,))
         if cursor.fetchone():
             continue
