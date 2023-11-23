@@ -23,3 +23,21 @@ scheduler.add_job(
 
 # start the scheduler
 scheduler.start()
+
+# sudo nano /etc/systemd/system/upworkbot.service
+
+# [Unit]
+# Description=Service to run Upwork Bot Notifications
+# After=network.target
+# [Service]
+# User=de
+# Group=www-data
+# WorkingDirectory=/home/de/upworknotifier
+# ExecStart=/home/de/upworknotifier/env/bin/python runner.py
+# [Install]
+# WantedBy=multi-user.target
+
+# sudo systemctl daemon-reload
+# sudo systemctl enable upworkbot
+# sudo systemctl start upworkbot
+# sudo systemctl status upworkbot

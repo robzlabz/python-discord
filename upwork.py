@@ -145,7 +145,7 @@ for feed_url in feed_urls:
             r.raise_for_status()
             logger.debug('Message sent successfully')
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending message to Telegram: {e}")
+            logger.error(f"Error sending message to Telegram: {e} {payload}")
             continue
         # Add the job ID to the list of processed jobs
         logger.debug(f'Saving job {job_id} to db')
