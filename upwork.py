@@ -145,9 +145,11 @@ for feed_url in feed_urls:
         # Send the message to Telegram
         payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML', 'disable_web_page_preview': True}
         try:
-            r = requests.post(f'{bot_url}sendMessage', json=payload)
-            r.raise_for_status()
-            logger.debug('Message sent successfully')
+            # notify that posted in less than 5 minutes
+            if hours == 0 and minutes < 5:
+                r = requests.post(f'{bot_url}sendMessage', json=payload)
+                r.raise_for_status()
+                logger.debug('Message sent successfully')
         except requests.exceptions.RequestException as e:
             logger.error(f"Error sending message to Telegram: {e} {payload}")
             continue
