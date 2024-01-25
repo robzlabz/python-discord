@@ -11,4 +11,4 @@ COPY . /app
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run runner.py when the container launches
-CMD ["python", "runner.py"]
+CMD ["python", "upwork.py"]
