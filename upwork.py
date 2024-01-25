@@ -157,7 +157,7 @@ for feed_url in urls:
                   f'\n\n{skills_hashtags}'
 
         # notify that posted in less than 5 minutes
-        print(f'{hours}h {minutes}m')
+        print(f'[{hours}h {minutes}m], URL: {url}')
         if hours == 0 and minutes < 5:
             send_discord_message(message)
             # Add the job ID to the list of processed jobs
