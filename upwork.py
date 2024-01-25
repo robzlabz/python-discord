@@ -5,7 +5,7 @@ import os
 import sqlite3
 from datetime import datetime
 from re import findall
-
+from dotenv import load_dotenv
 import feedparser
 import requests
 import tzlocal
@@ -23,10 +23,8 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Load configurations from config.json file
-logger.debug('Reading config file')
-with open(configs_file, 'r') as f:
-    config = json.load(f)
+# Load configurations
+load_dotenv()
 
 logger.debug('Creating connection to the SQLite database')
 # Create a connection to the SQLite database
@@ -49,8 +47,8 @@ cursor.execute('''
     );
 ''')
 
-webhook_url = config['discord_url']
-feed_urls = config['feed_url']
+webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
+feed_urls = os.getenv('FEED_URL')
 
 # Set your local timezone
 local_tz = tzlocal.get_localzone()
@@ -73,7 +71,8 @@ def send_discord_message(content):
 
 # Fetch new jobs from the RSS feed and send notifications to Telegram
 logger.debug('Fetching jobs from the RSS feed')
-for feed_url in feed_urls:
+urls = feed_urls.split(',')
+for feed_url in urls:
     # Parse the RSS feed
     feed = feedparser.parse(feed_url)
 
@@ -158,6 +157,7 @@ for feed_url in feed_urls:
                   f'\n\n{skills_hashtags}'
 
         # notify that posted in less than 5 minutes
+        print(f'{hours}h {minutes}m')
         if hours == 0 and minutes < 5:
             send_discord_message(message)
             # Add the job ID to the list of processed jobs
