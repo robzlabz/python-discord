@@ -49,9 +49,13 @@ cursor.execute('''
     );
 ''')
 
-webhook_url = config['webhook_url']
+webhook_url = config['discord_url']
 feed_urls = config['feed_url']
 
+# Set your local timezone
+local_tz = tzlocal.get_localzone()
+
+# send discord message here
 def send_discord_message(content):
     data = {
         "content": content
@@ -65,9 +69,7 @@ def send_discord_message(content):
             'Request to discord returned an error %s, the response is:\n%s'
             % (response.status_code, response.text)
         )
-
-# Set your local timezone
-local_tz = tzlocal.get_localzone()
+    logger.debug('Message sent successfully')
 
 # Fetch new jobs from the RSS feed and send notifications to Telegram
 logger.debug('Fetching jobs from the RSS feed')
@@ -145,11 +147,8 @@ for feed_url in feed_urls:
         # Get the 1st sentence of the summary
         summary = (entry.summary.split('.')[0] + ".").replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n").replace("<br >", "\n").replace('\n\n', '\n')
 
-        # Your Discord webhook URL
-        webhook_url = 'your webhook url here'
-
         # Build the message to send to Discord
-        message = f'**{entry.title.replace(" - Upwork", "")}**' \
+        message = f'# {entry.title.replace(" - Upwork", "")}' \
                   f'\n**#{category}**' \
                   f'\n💲 {rate}' \
                   f'\n\n📄 {summary}' \
@@ -158,27 +157,10 @@ for feed_url in feed_urls:
                   f'\n🌍 {country}' \
                   f'\n\n{skills_hashtags}'
 
-        # Send the message to Discord
-        data = {
-            "content": message
-        }
-
         # notify that posted in less than 5 minutes
         if hours == 0 and minutes < 5:
-            response = requests.post(
-                webhook_url, data=json.dumps(data),
-                headers={'Content-Type': 'application/json'}
-            )
-            if response.status_code != 204:
-                raise ValueError(
-                    'Request to discord returned an error %s, the response is:\n%s'
-                    % (response.status_code, response.text)
-                )
-            logger.debug('Message sent successfully')
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Error sending message to Telegram: {e} {payload}")
-            continue
-        # Add the job ID to the list of processed jobs
+            send_discord_message(message)
+            # Add the job ID to the list of processed jobs
         logger.debug(f'Saving job {job_id} to db')
         cursor.execute("INSERT INTO jobs VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                        (job_id, entry.title, category, rate, summary, entry.link, entry.published, country, skills))
