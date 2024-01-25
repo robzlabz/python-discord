@@ -1,5 +1,5 @@
 {
-    "tgBotToken": "111111111:Your_Telegram_token",
+    "discord_url": "https://discord.com/api/webhooks/.....",
     "feed_url": [
         "https://www.upwork.com/ab/feed/jobs/rss?q=...",
         "https://www.upwork.com/ab/feed/jobs/rss?q=..."

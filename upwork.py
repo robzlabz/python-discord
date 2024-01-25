@@ -1,3 +1,4 @@
+import requests
 import json
 import logging
 import os
@@ -48,10 +49,22 @@ cursor.execute('''
     );
 ''')
 
-tgBotToken = config['tgBotToken']
+webhook_url = config['webhook_url']
 feed_urls = config['feed_url']
-bot_url = f'https://api.telegram.org/bot{tgBotToken}/'
-chat_id = config['chat_id']
+
+def send_discord_message(content):
+    data = {
+        "content": content
+    }
+    response = requests.post(
+        webhook_url, data=json.dumps(data),
+        headers={'Content-Type': 'application/json'}
+    )
+    if response.status_code != 204:
+        raise ValueError(
+            'Request to discord returned an error %s, the response is:\n%s'
+            % (response.status_code, response.text)
+        )
 
 # Set your local timezone
 local_tz = tzlocal.get_localzone()
@@ -132,9 +145,12 @@ for feed_url in feed_urls:
         # Get the 1st sentence of the summary
         summary = (entry.summary.split('.')[0] + ".").replace("<br>", "\n").replace("<br/>", "\n").replace("<br />", "\n").replace("<br >", "\n").replace('\n\n', '\n')
 
-        # Build the message to send to Telegram
-        message = f'<b>{entry.title.replace(" - Upwork", "")}</b>' \
-                  f'\n<b>#{category}</b>' \
+        # Your Discord webhook URL
+        webhook_url = 'your webhook url here'
+
+        # Build the message to send to Discord
+        message = f'**{entry.title.replace(" - Upwork", "")}**' \
+                  f'\n**#{category}**' \
                   f'\n💲 {rate}' \
                   f'\n\n📄 {summary}' \
                   f'\n🔗 {entry.link.strip()}' \
@@ -142,14 +158,23 @@ for feed_url in feed_urls:
                   f'\n🌍 {country}' \
                   f'\n\n{skills_hashtags}'
 
-        # Send the message to Telegram
-        payload = {'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML', 'disable_web_page_preview': True}
-        try:
-            # notify that posted in less than 5 minutes
-            if hours == 0 and minutes < 5:
-                r = requests.post(f'{bot_url}sendMessage', json=payload)
-                r.raise_for_status()
-                logger.debug('Message sent successfully')
+        # Send the message to Discord
+        data = {
+            "content": message
+        }
+
+        # notify that posted in less than 5 minutes
+        if hours == 0 and minutes < 5:
+            response = requests.post(
+                webhook_url, data=json.dumps(data),
+                headers={'Content-Type': 'application/json'}
+            )
+            if response.status_code != 204:
+                raise ValueError(
+                    'Request to discord returned an error %s, the response is:\n%s'
+                    % (response.status_code, response.text)
+                )
+            logger.debug('Message sent successfully')
         except requests.exceptions.RequestException as e:
             logger.error(f"Error sending message to Telegram: {e} {payload}")
             continue
